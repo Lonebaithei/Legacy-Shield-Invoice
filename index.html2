@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legacy Shield Invoice</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f2f5;
+    padding: 40px 20px;
+    color: #202124;
+  }
+  .invoice-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #d32f2f 100%);
+    padding: 32px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: "";
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 150px; height: 150px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: "";
+    position: absolute;
+    bottom: -20px; left: 60%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-box {
+    width: 56px; height: 56px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .brand-name h1 {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .brand-name p {
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .invoice-label {
+    text-align: right;
+    color: #fff;
+  }
+  .invoice-label .big {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 2px;
+  }
+  .invoice-label .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  .badge-dot {
+    width: 8px; height: 8px;
+    background: #4caf50;
+    border-radius: 50%;
+  }
+  .header-contact {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .header-contact span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.9);
+    font-size: 12px;
+  }
+  .header-contact svg {
+    width: 14px; height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  .meta-section {
+    padding: 28px 40px;
+    background: #fafbfc;
+    border-bottom: 1px solid #e8eaed;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .meta-left {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px 16px;
+    align-items: center;
+  }
+  .meta-left label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .meta-left input, .meta-left select {
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #202124;
+    background: #fff;
+    font-family: inherit;
+  }
+  .meta-left input[readonly] {
+    background: #f1f3f4;
+    font-weight: 600;
+    color: #1a237e;
+  }
+  .inv-num-wrap {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .inv-num-wrap input:first-child {
+    width: 50px;
+    text-align: center;
+    font-weight: 600;
+    color: #1a237e;
+  }
+  .inv-num-wrap button {
+    padding: 8px;
+    border: none;
+    background: #1a237e;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .inv-num-wrap button svg {
+    width: 14px; height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  .bill-to {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e8eaed;
+  }
+  .bill-to .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #d32f2f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .bill-to input, .bill-to textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #202124;
+    font-family: inherit;
+    margin-bottom: 8px;
+  }
+  .bill-to input::placeholder, .bill-to textarea::placeholder {
+    color: #9aa0a6;
+  }
+  .bill-to textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-size: 13px;
+    color: #5f6368;
+  }
+  .bill-to .tel-row {
+    display: flex;
+    gap: 10px;
+  }
+  .bill-to .tel-row input {
+    flex: 1;
+    font-size: 13px;
+  }
+
+  .items-section {
+    padding: 28px 40px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    background: #1a237e;
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; width: 50px; }
+  thead th:nth-child(3) { text-align: center; width: 90px; }
+  thead th:nth-child(4), thead th:nth-child(5) { text-align: right; width: 130px; }
+  thead th:last-child { border-radius: 0 8px 0 0; width: 40px; }
+  tbody td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #e8eaed;
+  }
+  tbody td:first-child {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #9aa0a6;
+    font-weight: 600;
+    text-align: center;
+  }
+  tbody td input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e8eaed;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #202124;
+    font-family: inherit;
+    text-align: left;
+  }
+  tbody td:nth-child(3) input { text-align: center; }
+  tbody td:nth-child(4) input, tbody td:nth-child(5) { text-align: right; }
+  tbody td .row-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a237e;
+    padding: 10px 14px;
+    display: block;
+    text-align: right;
+  }
+  tbody td .remove-btn {
+    background: none;
+    border: none;
+    color: #ea4335;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  tbody td .remove-btn svg {
+    width: 16px; height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+  .add-row-btn {
+    margin-top: 12px;
+    padding: 10px 20px;
+    background: #fff;
+    border: 2px dashed #dadce0;
+    border-radius: 8px;
+    color: #1a237e;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .add-row-btn:hover {
+    border-color: #1a237e;
+    background: #f8f9fa;
+  }
+  .add-row-btn svg {
+    width: 16px; height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+  }
+
+  .totals-section {
+    padding: 0 40px 28px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .totals-box {
+    width: 320px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .totals-box .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #5f6368;
+  }
+  .totals-box .row .val {
+    font-weight: 600;
+    color: #202124;
+  }
+  .totals-box .divider {
+    height: 1px;
+    background: #dadce0;
+    margin: 10px 0;
+  }
+  .totals-box .grand {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .totals-box .grand .label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a237e;
+  }
+  .totals-box .grand .val {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a237e;
+  }
+
+  .notes-section {
+    padding: 0 40px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .notes-section label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .notes-section textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #5f6368;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+  }
+  .signature-box {
+    background: #fff;
+    border: 1px solid #e8eaed;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .signature-grid label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+  .signature-grid input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+  }
+
+  .footer-actions {
+    padding: 20px 40px;
+    background: #f8f9fa;
+    border-top: 1px solid #e8eaed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-actions .credit {
+    font-size: 12px;
+    color: #9aa0a6;
+  }
+  .footer-actions .btn-group {
+    display: flex;
+    gap: 10px;
+  }
+  .footer-actions button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-reset {
+    border: 1px solid #dadce0;
+    background: #fff;
+    color: #5f6368;
+  }
+  .btn-print {
+    background: linear-gradient(135deg, #1a237e, #283593);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(26,35,126,0.3);
+  }
+  .btn-print svg {
+    width: 14px; height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .invoice-container { box-shadow: none; border-radius: 0; }
+    .footer-actions, .remove-btn, .add-row-btn { display: none !important; }
+    input, textarea, select {
+      border: none !important;
+      background: transparent !important;
+      padding-left: 0 !important;
+    }
+    input::placeholder, textarea::placeholder { color: transparent !important; }
+    select { appearance: none; -webkit-appearance: none; }
+  }
+
+  @media (max-width: 768px) {
+    .meta-grid, .notes-section { grid-template-columns: 1fr; }
+    .header-top { flex-direction: column; gap: 16px; }
+    .invoice-label { text-align: left; }
+    .header-contact { flex-direction: column; gap: 8px; }
+    .items-section { padding: 20px; overflow-x: auto; }
+    table { min-width: 600px; }
+    .totals-section { justify-content: stretch; }
+    .totals-box { width: 100%; }
+    .footer-actions { flex-direction: column; gap: 12px; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="invoice-container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <img src="Lonebaithei/Legacy-Shield-Invoice/images/WhatsApp Image 2026-08-24 at 16.41.42 (1).jpeg" alt="logo image">
+      </div>
+      <div class="invoice-label">
+        <div class="big">INVOICE</div>
+        <div class="badge"><span class="badge-dot"></span><span id="inv-status">DRAFT</span></div>
+      </div>
+    </div>
+    <div class="header-contact">
+      <span>
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        P.O Box 14, Karakubis
+      </span>
+      <span>
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        +267 72687198 / +264 817064581
+      </span>
+      <span>
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        boemobaithei@gmail.com
+      </span>
+    </div>
+  </div>
+
+  <!-- Meta & Bill To -->
+  <div class="meta-section">
+    <div class="meta-grid">
+      <div class="meta-left">
+        <label>Invoice #</label>
+        <div class="inv-num-wrap">
+          <input id="inv-prefix" type="text" value="LS" oninput="generateInvoiceNum()">
+          <input id="inv-num" type="text" readonly value="LS-2026-08-26-001">
+          <button onclick="generateInvoiceNum()" title="Generate New Number">
+            <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          </button>
+        </div>
+
+        <label>Issue Date</label>
+        <input id="inv-date" type="date" onchange="updateDueDate()">
+
+        <label>Due Date</label>
+        <input id="inv-due" type="date">
+
+        <label>Payment Terms</label>
+        <select id="inv-terms" onchange="updateDueDate()">
+          <option value="0">On Receipt</option>
+          <option value="7">Net 7 Days</option>
+          <option value="14">Net 14 Days</option>
+          <option value="30" selected>Net 30 Days</option>
+          <option value="60">Net 60 Days</option>
+        </select>
+      </div>
+
+      <div class="bill-to">
+        <span class="label">Bill To</span>
+        <input id="client-name" type="text" placeholder="Client / Company Name">
+        <textarea id="client-addr" placeholder="Address Line 1&#10;Address Line 2&#10;City, Country"></textarea>
+        <div class="tel-row">
+          <input id="client-tel" type="text" placeholder="Tel">
+          <input id="client-cell" type="text" placeholder="Cell">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Items -->
+  <div class="items-section">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="line-items"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Line Item
+    </button>
+  </div>
+
+  <!-- Totals -->
+  <div class="totals-section">
+    <div class="totals-box">
+      <div class="row"><span>Subtotal</span><span class="val" id="subtotal">$ 0.00</span></div>
+      <div class="row"><span>VAT (14%)</span><span class="val" id="vat">$ 0.00</span></div>
+      <div class="divider"></div>
+      <div class="grand"><span class="label">GRAND TOTAL</span><span class="val" id="grand-total">$ 0.00</span></div>
+    </div>
+  </div>
+
+  <!-- Notes & Signature -->
+  <div class="notes-section">
+    <div>
+      <label>Notes / Terms</label>
+      <textarea id="inv-notes" placeholder="Payment instructions, bank details, or additional terms..."></textarea>
+    </div>
+    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+      <div class="signature-box">
+        <div class="signature-grid">
+          <div>
+            <label>Received By</label>
+            <input type="text" placeholder="Name">
+          </div>
+          <div>
+            <label>Signature</label>
+            <input type="text" placeholder="Sign">
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-actions">
+    <div class="credit">Generated by Legacy Shield Invoice System</div>
+    <div class="btn-group">
+      <button class="btn-reset" onclick="resetInvoice()">Reset</button>
+      <button class="btn-print" onclick="window.print()">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Save PDF
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let rowCount = 0;
+  const currency = 'N$';
+
+  function formatMoney(num) {
+    return currency + ' ' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function parseMoney(val) {
+    return parseFloat(val.replace(/[^0-9.-]/g, '')) || 0;
+  }
+
+  function generateInvoiceNum() {
+    const prefix = document.getElementById('inv-prefix').value.toUpperCase() || 'LS';
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const random = String(Math.floor(Math.random() * 900) + 100);
+    document.getElementById('inv-num').value = prefix + '-' + yyyy + '-' + mm + '-' + dd + '-' + random;
+  }
+
+  function updateDueDate() {
+    const terms = parseInt(document.getElementById('inv-terms').value);
+    const issueDate = new Date(document.getElementById('inv-date').value);
+    if (!isNaN(issueDate.getTime())) {
+      const due = new Date(issueDate);
+      due.setDate(due.getDate() + terms);
+      document.getElementById('inv-due').value = due.toISOString().split('T')[0];
+    }
+  }
+
+  function addRow(data) {
+    rowCount++;
+    const tbody = document.getElementById('line-items');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${rowCount}</td>
+      <td><input type="text" class="desc-input" placeholder="Item description" value="${data ? data.desc : ''}"></td>
+      <td><input type="number" class="qty-input" min="0" step="1" value="${data ? data.qty : 1}" oninput="calcRow(this)"></td>
+      <td><input type="number" class="price-input" min="0" step="0.01" value="${data ? data.price : ''}" oninput="calcRow(this)" placeholder="0.00"></td>
+      <td><span class="row-total">${currency} 0.00</span></td>
+      <td><button class="remove-btn" onclick="removeRow(this)" title="Remove"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>
+    `;
+    tbody.appendChild(tr);
+    calcTotals();
+  }
+
+  function removeRow(btn) {
+    btn.closest('tr').remove();
+    renumberRows();
+    calcTotals();
+  }
+
+  function renumberRows() {
+    const rows = document.querySelectorAll('#line-items tr');
+    rows.forEach((tr, i) => { tr.querySelector('td:first-child').textContent = i + 1; });
+    rowCount = rows.length;
+  }
+
+  function calcRow(input) {
+    const tr = input.closest('tr');
+    const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
+    const price = parseFloat(tr.querySelector('.price-input').value) || 0;
+    tr.querySelector('.row-total').textContent = formatMoney(qty * price);
+    calcTotals();
+  }
+
+  function calcTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.row-total').forEach(el => { subtotal += parseMoney(el.textContent); });
+    const vat = subtotal * 0.14;
+    const grand = subtotal + vat;
+    document.getElementById('subtotal').textContent = formatMoney(subtotal);
+    document.getElementById('vat').textContent = formatMoney(vat);
+    document.getElementById('grand-total').textContent = formatMoney(grand);
+
+    const status = subtotal > 0 ? 'READY' : 'DRAFT';
+    const statusEl = document.getElementById('inv-status');
+    statusEl.textContent = status;
+    statusEl.previousElementSibling.style.background = status === 'READY' ? '#4caf50' : '#ff9800';
+  }
+
+  function resetInvoice() {
+    document.getElementById('client-name').value = '';
+    document.getElementById('client-addr').value = '';
+    document.getElementById('client-tel').value = '';
+    document.getElementById('client-cell').value = '';
+    document.getElementById('inv-notes').value = '';
+    document.getElementById('line-items').innerHTML = '';
+    rowCount = 0;
+    generateInvoiceNum();
+    addRow();
+    calcTotals();
+  }
+
+  // Init
+  document.getElementById('inv-date').value = new Date().toISOString().split('T')[0];
+  updateDueDate();
+  generateInvoiceNum();
+  addRow();
+</script>
+
+</body>
+</html>
