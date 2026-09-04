@@ -17,8 +17,6 @@
   .box { border: 1px solid #333; border-radius: 6px; padding: 10px 15px; flex: 1 1 320px; }
   .box p { margin: 6px 0; display: flex; gap: 6px; }
   .box label { color: #555; white-space: nowrap; }
-  .mini-btn { font-size: 11px; padding: 2px 8px; border: 1px solid #1e2a78; background: #fff; color: #1e2a78; border-radius: 4px; cursor: pointer; white-space: nowrap; }
-  .mini-btn:hover { background: #1e2a78; color: #fff; }
   [contenteditable] { outline: none; }
   [contenteditable]:hover { background: #fffbe6; }
   [contenteditable]:focus { background: #fff3b0; }
@@ -38,14 +36,6 @@
   tfoot td { font-weight: bold; text-align: right; }
   tfoot td:last-child { font-weight: normal; }
 
-  .payments { margin-top: 25px; }
-  .payments h3 { margin-bottom: 8px; font-size: 16px; }
-  .payments table { min-width: 0; }
-  .payments td, .payments th { font-size: 13px; }
-  .balance-row td { font-weight: bold; }
-  .balance-row.due td { color: #c0392b; }
-  .balance-row.paid td { color: #1a7a1a; }
-
   .signoff { margin-top: 25px; }
   .signoff .line { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
 
@@ -61,7 +51,7 @@
   }
 
   @media print {
-    .toolbar, .actioncol, .mini-btn { display: none !important; }
+    .toolbar, .actioncol { display: none !important; }
     body { margin: 0; }
     [contenteditable]:hover, [contenteditable]:focus { background: none; }
     .field:empty:before, td.desc:empty:before { content: ""; }
@@ -89,7 +79,7 @@
       <p><label>Tel:</label><span class="field" contenteditable></span><label>Cell:</label><span class="field" contenteditable></span></p>
     </div>
     <div class="box">
-      <p><label>Invoice #:</label><span class="field" id="invNumber" contenteditable data-placeholder="e.g. 0001"></span><button type="button" id="genNumBtn" class="mini-btn">Generate #</button></p>
+      <p><label>Invoice #:</label><span class="field" contenteditable data-placeholder="e.g. 0001"></span></p>
       <p><label>Date:</label><span class="field" contenteditable data-placeholder="DD / MM / YYYY"></span></p>
       <p><label>Due date:</label><span class="field" contenteditable data-placeholder="DD / MM / YYYY"></span></p>
     </div>
@@ -126,39 +116,6 @@
   <div class="toolbar">
     <button id="addRowBtn" type="button">+ Add Row</button>
     <button id="printBtn" type="button">🖨 Print / Save PDF</button>
-  </div>
-
-  <div class="payments">
-    <h3>Payments Received</h3>
-    <div class="table-wrap">
-    <table id="paymentsTable">
-      <thead>
-        <tr>
-          <th>DATE</th>
-          <th>METHOD</th>
-          <th>REFERENCE</th>
-          <th>AMOUNT</th>
-          <th class="actioncol"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="payment">
-          <td contenteditable data-placeholder="DD/MM/YYYY"></td>
-          <td contenteditable data-placeholder="cash / bank / mobile money"></td>
-          <td contenteditable data-placeholder="ref #"></td>
-          <td contenteditable data-role="pay-amount">0.00</td>
-          <td class="actioncol"><button class="del-row" title="Remove row">✕</button></td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr><td colspan="3">TOTAL PAID</td><td id="totalPaid">0.00</td><td class="actioncol"></td></tr>
-        <tr class="balance-row due" id="balanceRow"><td colspan="3">BALANCE DUE</td><td id="balanceDue">0.00</td><td class="actioncol"></td></tr>
-      </tfoot>
-    </table>
-    </div>
-    <div class="toolbar">
-      <button id="addPaymentBtn" type="button">+ Add Payment</button>
-    </div>
   </div>
 
   <div class="signoff">
@@ -217,70 +174,7 @@ tbody.addEventListener('click', e => {
 tbody.addEventListener('input', recalc);
 document.getElementById('printBtn').addEventListener('click', () => window.print());
 
-// Sequential invoice numbering — localStorage counter, resets daily.
-// CAVEAT: this is per-browser, not multi-device/multi-user safe. Fine for a
-// single person issuing invoices from one machine; not a substitute for a
-// real database counter if this ever becomes multi-user.
-document.getElementById('genNumBtn').addEventListener('click', () => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const dateKey = `${y}-${m}-${d}`;
-  const storageKey = 'ls_invoice_seq_' + dateKey;
-  let seq = parseInt(localStorage.getItem(storageKey) || '0', 10) + 1;
-  localStorage.setItem(storageKey, seq);
-  const invNum = `LS-${dateKey}-${String(seq).padStart(3, '0')}`;
-  document.getElementById('invNumber').textContent = invNum;
-});
-
-// Payments Received — live record against this invoice, not persisted.
-// The printed/exported PDF is the source of truth (matches the paper-trail
-// approach already in use); this is a running calculator, not a database.
-const paymentsBody = document.querySelector('#paymentsTable tbody');
-
-function paymentRowTemplate() {
-  const tr = document.createElement('tr');
-  tr.className = 'payment';
-  tr.innerHTML = `
-    <td contenteditable data-placeholder="DD/MM/YYYY"></td>
-    <td contenteditable data-placeholder="cash / bank / mobile money"></td>
-    <td contenteditable data-placeholder="ref #"></td>
-    <td contenteditable data-role="pay-amount">0.00</td>
-    <td class="actioncol"><button class="del-row" title="Remove row">✕</button></td>`;
-  return tr;
-}
-
-function recalcPayments() {
-  let totalPaid = 0;
-  paymentsBody.querySelectorAll('[data-role="pay-amount"]').forEach(td => {
-    totalPaid += num(td.textContent);
-  });
-  document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
-  const grandTotal = num(document.getElementById('grandtotal').textContent);
-  const balance = grandTotal - totalPaid;
-  document.getElementById('balanceDue').textContent = Math.abs(balance).toFixed(2);
-  const row = document.getElementById('balanceRow');
-  row.classList.toggle('due', balance > 0.001);
-  row.classList.toggle('paid', balance <= 0.001);
-  row.querySelector('td:first-child').textContent = balance > 0.001 ? 'BALANCE DUE' : 'PAID IN FULL';
-}
-
-document.getElementById('addPaymentBtn').addEventListener('click', () => {
-  paymentsBody.appendChild(paymentRowTemplate());
-});
-
-paymentsBody.addEventListener('click', e => {
-  if (e.target.classList.contains('del-row')) {
-    if (paymentsBody.children.length > 1) e.target.closest('tr').remove();
-    recalcPayments();
-  }
-});
-
-paymentsBody.addEventListener('input', recalcPayments);
-
 recalc();
-recalcPayments();
 </script>
 </body>
 </html>
